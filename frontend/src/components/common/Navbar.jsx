@@ -24,12 +24,14 @@ const Navbar = () => {
           <div className="flex items-center gap-6">
             {isAdmin ? (
               <>
+                <Link to="/admin/dashboard" className="hover:text-blue-200 text-sm font-medium">Dashboard</Link>
                 <Link to="/admin/assignments" className="hover:text-blue-200 text-sm font-medium">Assignments</Link>
                 <Link to="/admin/groups" className="hover:text-blue-200 text-sm font-medium">Groups</Link>
                 <Link to="/admin/analytics" className="hover:text-blue-200 text-sm font-medium">Analytics</Link>
               </>
             ) : (
               <>
+                <Link to="/student/dashboard" className="hover:text-blue-200 text-sm font-medium">Dashboard</Link>
                 <Link to="/student/assignments" className="hover:text-blue-200 text-sm font-medium">Assignments</Link>
                 <Link to="/student/groups" className="hover:text-blue-200 text-sm font-medium">My Groups</Link>
               </>

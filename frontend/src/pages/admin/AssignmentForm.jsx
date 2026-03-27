@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import api from '../../utils/api';
 import Spinner from '../../components/common/Spinner';
 
@@ -70,8 +71,10 @@ const AssignmentForm = () => {
       } else {
         await api.post('/assignments', form);
       }
+      toast.success(isEdit ? 'Assignment updated!' : 'Assignment created!');
       navigate('/admin/assignments');
     } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to save assignment');
       setError(err.response?.data?.error || 'Failed to save assignment');
     } finally {
       setSaving(false);

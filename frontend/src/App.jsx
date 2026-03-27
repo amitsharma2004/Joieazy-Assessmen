@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import Navbar from './components/common/Navbar';
@@ -9,6 +10,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 
 // Admin pages
+import AdminDashboard from './pages/admin/Dashboard';
 import AdminAssignmentList from './pages/admin/AssignmentList';
 import AdminAssignmentForm from './pages/admin/AssignmentForm';
 import AdminAssignmentDetail from './pages/admin/AssignmentDetail';
@@ -16,6 +18,7 @@ import AdminAnalytics from './pages/admin/Analytics';
 import AdminGroups from './pages/admin/Groups';
 
 // Student pages
+import StudentDashboard from './pages/student/Dashboard';
 import StudentAssignmentList from './pages/student/AssignmentList';
 import StudentGroups from './pages/student/Groups';
 
@@ -24,6 +27,7 @@ const AppRoot = () => {
 
   return (
     <BrowserRouter>
+      <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
       <Navbar />
       <main>
         <Routes>
@@ -32,6 +36,9 @@ const AppRoot = () => {
           <Route path="/register" element={<Register />} />
 
           {/* Admin routes */}
+          <Route path="/admin/dashboard" element={
+            <ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>
+          } />
           <Route path="/admin/assignments" element={
             <ProtectedRoute role="admin"><AdminAssignmentList /></ProtectedRoute>
           } />
@@ -52,6 +59,9 @@ const AppRoot = () => {
           } />
 
           {/* Student routes */}
+          <Route path="/student/dashboard" element={
+            <ProtectedRoute role="student"><StudentDashboard /></ProtectedRoute>
+          } />
           <Route path="/student/assignments" element={
             <ProtectedRoute role="student"><StudentAssignmentList /></ProtectedRoute>
           } />
@@ -65,6 +75,8 @@ const AppRoot = () => {
               ? <Navigate to={user.role === 'admin' ? '/admin/assignments' : '/student/assignments'} replace />
               : <Navigate to="/login" replace />
           } />
+          <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="/student" element={<Navigate to="/student/dashboard" replace />} />
 
           {/* 404 */}
           <Route path="*" element={<Navigate to="/" replace />} />

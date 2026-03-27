@@ -1,25 +1,34 @@
 import React, { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import api from '../../utils/api';
 import Spinner from '../../components/common/Spinner';
 import ConfirmModal from '../../components/student/ConfirmModal';
 
+const getDueBadge = (dueDate) => {
+  const now  = new Date();
+  const due  = new Date(dueDate);
+  const diff = Math.ceil((due - now) / (1000 * 60 * 60 * 24));
+  if (diff < 0)  return { label: `Overdue ${Math.abs(diff)}d`, cls: 'bg-red-100 text-red-700' };
+  if (diff === 0) return { label: 'Due today!', cls: 'bg-orange-100 text-orange-700' };
+  if (diff <= 3) return { label: `${diff}d left`, cls: 'bg-yellow-100 text-yellow-700' };
+  return { label: `${diff}d left`, cls: 'bg-green-100 text-green-700' };
+};
+
 const StudentAssignmentList = () => {
   const [assignments, setAssignments] = useState([]);
-  const [groups, setGroups] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedAssignment, setSelectedAssignment] = useState(null); // for confirm modal
-  const [error, setError] = useState('');
+  const [groups, setGroups]           = useState([]);
+  const [loading, setLoading]         = useState(true);
+  const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [search, setSearch]           = useState('');
+  const [filter, setFilter]           = useState('all'); // all | pending | submitted | overdue
 
   const fetchData = async () => {
     try {
-      const [aRes, gRes] = await Promise.all([
-        api.get('/assignments'),
-        api.get('/groups')
-      ]);
+      const [aRes, gRes] = await Promise.all([api.get('/assignments'), api.get('/groups')]);
       setAssignments(aRes.data);
       setGroups(gRes.data);
     } catch {
-      setError('Failed to load data');
+      toast.error('Failed to load assignments');
     } finally {
       setLoading(false);
     }
@@ -27,31 +36,29 @@ const StudentAssignmentList = () => {
 
   useEffect(() => { fetchData(); }, []);
 
-  const getGroupSubmission = (assignment) => {
-    return assignment.group_submissions?.[0] || null;
+  const getStatus = (a) => {
+    if (a.group_submissions?.some(s => s.status === 'confirmed')) return 'submitted';
+    if (a.group_submissions?.some(s => s.status === 'pending'))   return 'pending';
+    if (new Date(a.due_date) < new Date()) return 'overdue';
+    return 'active';
   };
 
-  const statusBadge = (dueDate) => {
-    const due = new Date(dueDate);
-    const now = new Date();
-    if (due < now) return <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">Overdue</span>;
-    const diff = (due - now) / (1000 * 60 * 60 * 24);
-    if (diff <= 3) return <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">Due soon</span>;
-    return <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Active</span>;
-  };
+  const filtered = assignments.filter(a => {
+    const matchSearch = a.title.toLowerCase().includes(search.toLowerCase()) ||
+                        a.description?.toLowerCase().includes(search.toLowerCase());
+    const status = getStatus(a);
+    const matchFilter = filter === 'all' || status === filter;
+    return matchSearch && matchFilter;
+  });
+
+  const totalAssignments = assignments.length;
+  const confirmedCount   = assignments.filter(a => getStatus(a) === 'submitted').length;
+  const progressPct      = totalAssignments > 0 ? Math.round((confirmedCount / totalAssignments) * 100) : 0;
 
   if (loading) return <Spinner />;
 
-  // Progress: number of confirmed submissions across all assignments
-  const totalAssignments = assignments.length;
-  const confirmedCount = assignments.filter((a) =>
-    a.group_submissions?.some((s) => s.status === 'confirmed')
-  ).length;
-  const progressPct = totalAssignments > 0 ? Math.round((confirmedCount / totalAssignments) * 100) : 0;
-
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800">My Assignments</h1>
         <p className="text-sm text-gray-500 mt-0.5">{assignments.length} assignment(s)</p>
@@ -65,29 +72,47 @@ const StudentAssignmentList = () => {
             <span className="text-sm font-bold text-blue-600">{confirmedCount}/{totalAssignments} submitted</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-3">
-            <div
-              className="bg-blue-500 h-3 rounded-full transition-all"
-              style={{ width: `${progressPct}%` }}
-            />
+            <div className="bg-blue-500 h-3 rounded-full transition-all" style={{ width: `${progressPct}%` }} />
           </div>
           <p className="text-xs text-gray-400 mt-1">{progressPct}% complete</p>
         </div>
       )}
 
-      {error && <div className="text-red-600 text-sm mb-4">{error}</div>}
+      {/* Search + Filter */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-5">
+        <input
+          type="text"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="🔍 Search assignments..."
+          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
+        <div className="flex gap-2 flex-wrap">
+          {['all','active','pending','submitted','overdue'].map(f => (
+            <button key={f} onClick={() => setFilter(f)}
+              className={`text-xs px-3 py-1.5 rounded-full font-medium border transition ${
+                filter === f
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400'
+              }`}>
+              {f.charAt(0).toUpperCase() + f.slice(1)}
+            </button>
+          ))}
+        </div>
+      </div>
 
-      {assignments.length === 0 ? (
+      {filtered.length === 0 ? (
         <div className="text-center py-16 text-gray-400">
           <p className="text-5xl mb-3">📋</p>
-          <p className="font-medium">No assignments yet</p>
-          <p className="text-sm mt-1">Check back later</p>
+          <p className="font-medium">{search || filter !== 'all' ? 'No matching assignments' : 'No assignments yet'}</p>
         </div>
       ) : (
         <div className="space-y-4">
-          {assignments.map((a) => {
-            const sub = getGroupSubmission(a);
-            const isConfirmed = sub?.status === 'confirmed';
-            const isPending = sub?.status === 'pending';
+          {filtered.map(a => {
+            const status  = getStatus(a);
+            const dueBadge = getDueBadge(a.due_date);
+            const isPending   = status === 'pending';
+            const isSubmitted = status === 'submitted';
 
             return (
               <div key={a.id} className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
@@ -95,16 +120,14 @@ const StudentAssignmentList = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <h2 className="text-base font-semibold text-gray-800">{a.title}</h2>
-                      {statusBadge(a.due_date)}
-                      {isConfirmed && (
-                        <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
-                          ✅ Submitted
-                        </span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${dueBadge.cls}`}>
+                        {dueBadge.label}
+                      </span>
+                      {isSubmitted && (
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">✅ Submitted</span>
                       )}
                       {isPending && (
-                        <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-medium">
-                          ⏳ Confirm Pending
-                        </span>
+                        <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-medium">⏳ Confirm Pending</span>
                       )}
                     </div>
 
@@ -114,30 +137,25 @@ const StudentAssignmentList = () => {
 
                     <div className="flex items-center gap-4 text-xs text-gray-500">
                       <span>📅 Due: <strong>{new Date(a.due_date).toLocaleDateString()}</strong></span>
-                      <span>By: {a.creator?.name}</span>
+                      <span>By: {a.creator_name || a.creator?.name}</span>
                       {a.onedrive_link && (
                         <a href={a.onedrive_link} target="_blank" rel="noreferrer"
-                          className="text-blue-500 hover:underline font-medium">
-                          🔗 Open Submission Folder
-                        </a>
+                          className="text-blue-500 hover:underline font-medium">🔗 Open Folder</a>
                       )}
                     </div>
                   </div>
 
-                  {/* Confirm button */}
-                  {!isConfirmed && groups.length > 0 && (
-                    <button
-                      onClick={() => setSelectedAssignment(a)}
+                  {!isSubmitted && groups.length > 0 && (
+                    <button onClick={() => setSelectedAssignment(a)}
                       className={`ml-4 text-sm px-4 py-2 rounded-lg font-medium transition ${
                         isPending
                           ? 'bg-yellow-500 text-white hover:bg-yellow-600'
                           : 'bg-blue-600 text-white hover:bg-blue-700'
-                      }`}
-                    >
-                      {isPending ? 'Confirm Now ✓' : 'Mark Submitted'}
+                      }`}>
+                      {isPending ? 'Confirm ✓' : 'Mark Submitted'}
                     </button>
                   )}
-                  {!isConfirmed && groups.length === 0 && (
+                  {!isSubmitted && groups.length === 0 && (
                     <span className="ml-4 text-xs text-gray-400 italic">Join a group first</span>
                   )}
                 </div>
@@ -147,13 +165,12 @@ const StudentAssignmentList = () => {
         </div>
       )}
 
-      {/* Confirm modal */}
       {selectedAssignment && (
         <ConfirmModal
           assignment={selectedAssignment}
           groups={groups}
           onClose={() => setSelectedAssignment(null)}
-          onSuccess={() => { setSelectedAssignment(null); fetchData(); }}
+          onSuccess={() => { setSelectedAssignment(null); fetchData(); toast.success('Submission confirmed! 🎉'); }}
         />
       )}
     </div>

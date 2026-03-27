@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import Spinner from '../../components/common/Spinner';
@@ -36,6 +37,7 @@ const StudentGroups = () => {
       setShowCreate(false);
       fetchGroups();
     } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to create group');
       setError(err.response?.data?.error || 'Failed to create group');
     } finally {
       setSaving(false);
@@ -49,8 +51,9 @@ const StudentGroups = () => {
       await api.post(`/groups/${groupId}/members`, { email });
       setAddMemberEmail((prev) => ({ ...prev, [groupId]: '' }));
       fetchGroups();
+      toast.success('Member added!');
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed to add member');
+      toast.error(err.response?.data?.error || 'Failed to add member');
     }
   };
 
@@ -59,8 +62,9 @@ const StudentGroups = () => {
     try {
       await api.delete(`/groups/${groupId}/members/${userId}`);
       fetchGroups();
+      toast.success('Member removed');
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed to remove member');
+      toast.error(err.response?.data?.error || 'Failed to remove member');
     }
   };
 
