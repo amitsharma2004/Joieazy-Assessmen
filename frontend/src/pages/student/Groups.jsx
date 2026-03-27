@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import Spinner from '../../components/common/Spinner';
+import { UsersIcon, PlusIcon, XMarkIcon, UserPlusIcon, UserMinusIcon } from '../../components/common/Icons';
 
 const StudentGroups = () => {
   const { user } = useAuth();
@@ -79,9 +80,9 @@ const StudentGroups = () => {
         </div>
         <button
           onClick={() => setShowCreate(!showCreate)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+          className="flex items-center gap-1.5 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
         >
-          + Create Group
+          <PlusIcon className="w-4 h-4" /> Create Group
         </button>
       </div>
 
@@ -104,7 +105,7 @@ const StudentGroups = () => {
             {saving ? '...' : 'Create'}
           </button>
           <button type="button" onClick={() => setShowCreate(false)} className="text-gray-500 hover:text-gray-700 px-2">
-            ✕
+            <XMarkIcon className="w-4 h-4" />
           </button>
         </form>
       )}
@@ -113,7 +114,7 @@ const StudentGroups = () => {
 
       {groups.length === 0 ? (
         <div className="text-center py-16 text-gray-400">
-          <p className="text-5xl mb-3">👥</p>
+          <UsersIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p className="font-medium">No groups yet</p>
           <p className="text-sm mt-1">Create a group to collaborate with classmates</p>
         </div>
@@ -166,9 +167,9 @@ const StudentGroups = () => {
                     />
                     <button
                       onClick={() => handleAddMember(g.id)}
-                      className="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-100"
+                      className="flex items-center gap-1 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-100"
                     >
-                      + Add
+                      <UserPlusIcon className="w-3.5 h-3.5" /> Add
                     </button>
                   </div>
                 )}

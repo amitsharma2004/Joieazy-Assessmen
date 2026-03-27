@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import api from '../../utils/api';
 import Spinner from '../../components/common/Spinner';
+import { ChartBarIcon } from '../../components/common/Icons';
 
 const Analytics = () => {
   const [data, setData] = useState([]);
@@ -24,7 +25,9 @@ const Analytics = () => {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">📊 Analytics Dashboard</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+        <ChartBarIcon className="w-7 h-7 text-blue-600" /> Analytics Dashboard
+      </h1>
 
       {/* Summary cards */}
       <div className="grid grid-cols-3 gap-4 mb-8">

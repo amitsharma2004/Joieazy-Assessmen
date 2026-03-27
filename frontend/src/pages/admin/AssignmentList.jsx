@@ -3,6 +3,11 @@ import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../../utils/api';
 import Spinner from '../../components/common/Spinner';
+import {
+  PlusIcon, SearchIcon, ArrowDownTrayIcon,
+  EyeIcon, PencilIcon, TrashIcon, LinkIcon,
+  CalendarIcon, UserIcon, ClipboardIcon
+} from '../../components/common/Icons';
 
 const getDueBadge = (dueDate) => {
   const now = new Date(); const due = new Date(dueDate);
@@ -17,7 +22,7 @@ const AssignmentList = () => {
   const [loading, setLoading]   = useState(true);
   const [deleting, setDeleting] = useState(null);
   const [search, setSearch]     = useState('');
-  const [filter, setFilter]     = useState('all'); // all | active | overdue
+  const [filter, setFilter]     = useState('all');
 
   const fetchAssignments = async () => {
     try {
@@ -40,21 +45,16 @@ const AssignmentList = () => {
     finally  { setDeleting(null); }
   };
 
-  // CSV Export
   const exportCSV = async () => {
     try {
       const { data: subs } = await api.get('/submissions');
       if (!subs.length) { toast('No submissions to export', { icon: 'ℹ️' }); return; }
-
       const rows = [['Assignment','Group','Confirmed By','Status','Date']];
       subs.forEach(s => rows.push([
-        s.assignment?.title || '',
-        s.group?.name || '',
-        s.confirmer?.name || '',
-        s.status,
+        s.assignment?.title || '', s.group?.name || '',
+        s.confirmer?.name || '', s.status,
         s.confirmed_at ? new Date(s.confirmed_at).toLocaleDateString() : '-'
       ]));
-
       const csv  = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
       const blob = new Blob([csv], { type: 'text/csv' });
       const url  = URL.createObjectURL(blob);
@@ -83,21 +83,24 @@ const AssignmentList = () => {
         </div>
         <div className="flex gap-2">
           <button onClick={exportCSV}
-            className="bg-green-50 text-green-700 border border-green-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-100 transition">
-            📥 Export CSV
+            className="flex items-center gap-1.5 bg-green-50 text-green-700 border border-green-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-100 transition">
+            <ArrowDownTrayIcon className="w-4 h-4" /> Export CSV
           </button>
           <Link to="/admin/assignments/new"
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition">
-            + New Assignment
+            className="flex items-center gap-1.5 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+            <PlusIcon className="w-4 h-4" /> New Assignment
           </Link>
         </div>
       </div>
 
       {/* Search + Filter */}
       <div className="flex flex-col sm:flex-row gap-3 mb-5">
-        <input type="text" value={search} onChange={e => setSearch(e.target.value)}
-          placeholder="🔍 Search assignments..."
-          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+        <div className="relative flex-1">
+          <SearchIcon className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input type="text" value={search} onChange={e => setSearch(e.target.value)}
+            placeholder="Search assignments..."
+            className="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+        </div>
         <div className="flex gap-2">
           {['all','active','overdue'].map(f => (
             <button key={f} onClick={() => setFilter(f)}
@@ -111,7 +114,7 @@ const AssignmentList = () => {
 
       {filtered.length === 0 ? (
         <div className="text-center py-16 text-gray-400">
-          <p className="text-5xl mb-3">📋</p>
+          <ClipboardIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p className="font-medium">{search || filter!=='all' ? 'No matching assignments' : 'No assignments yet'}</p>
         </div>
       ) : (
@@ -132,11 +135,19 @@ const AssignmentList = () => {
                   {a.description && <p className="text-sm text-gray-500 mb-2 line-clamp-2">{a.description}</p>}
 
                   <div className="flex items-center gap-4 text-xs text-gray-500">
-                    <span>📅 Due: <strong>{new Date(a.due_date).toLocaleDateString()}</strong></span>
+                    <span className="flex items-center gap-1">
+                      <CalendarIcon className="w-3.5 h-3.5" />
+                      Due: <strong>{new Date(a.due_date).toLocaleDateString()}</strong>
+                    </span>
                     {a.onedrive_link && (
-                      <a href={a.onedrive_link} target="_blank" rel="noreferrer" className="text-blue-500 hover:underline">🔗 OneDrive</a>
+                      <a href={a.onedrive_link} target="_blank" rel="noreferrer"
+                        className="flex items-center gap-1 text-blue-500 hover:underline">
+                        <LinkIcon className="w-3.5 h-3.5" /> OneDrive
+                      </a>
                     )}
-                    <span>By: {a.creator?.name || a.creator_name}</span>
+                    <span className="flex items-center gap-1">
+                      <UserIcon className="w-3.5 h-3.5" /> {a.creator?.name || a.creator_name}
+                    </span>
                   </div>
 
                   {a.stats && a.stats.total_groups > 0 && (
@@ -155,11 +166,16 @@ const AssignmentList = () => {
 
                 <div className="flex items-center gap-2 ml-4">
                   <Link to={`/admin/assignments/${a.id}`}
-                    className="text-xs bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-200 transition">View</Link>
+                    className="flex items-center gap-1 text-xs bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-200 transition">
+                    <EyeIcon className="w-3.5 h-3.5" /> View
+                  </Link>
                   <Link to={`/admin/assignments/${a.id}/edit`}
-                    className="text-xs bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition">Edit</Link>
+                    className="flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition">
+                    <PencilIcon className="w-3.5 h-3.5" /> Edit
+                  </Link>
                   <button onClick={() => handleDelete(a.id)} disabled={deleting===a.id}
-                    className="text-xs bg-red-50 text-red-700 px-3 py-1.5 rounded-lg hover:bg-red-100 transition disabled:opacity-50">
+                    className="flex items-center gap-1 text-xs bg-red-50 text-red-700 px-3 py-1.5 rounded-lg hover:bg-red-100 transition disabled:opacity-50">
+                    <TrashIcon className="w-3.5 h-3.5" />
                     {deleting===a.id ? '...' : 'Delete'}
                   </button>
                 </div>

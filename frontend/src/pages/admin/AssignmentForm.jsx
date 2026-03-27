@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../../utils/api';
 import Spinner from '../../components/common/Spinner';
+import { PencilIcon, PlusIcon } from '../../components/common/Icons';
 
 const AssignmentForm = () => {
   const { id } = useParams(); // undefined = create, id = edit
@@ -86,8 +87,8 @@ const AssignmentForm = () => {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-        <h1 className="text-xl font-bold text-gray-800 mb-6">
-          {isEdit ? '✏️ Edit Assignment' : '➕ New Assignment'}
+        <h1 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+          {isEdit ? <><PencilIcon className="w-5 h-5 text-blue-600" /> Edit Assignment</> : <><PlusIcon className="w-5 h-5 text-blue-600" /> New Assignment</>}
         </h1>
 
         {error && (

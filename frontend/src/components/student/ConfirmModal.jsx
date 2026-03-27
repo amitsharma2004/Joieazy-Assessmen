@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import api from '../../utils/api';
+import { CheckCircleIcon, XMarkIcon, ExclamationIcon } from '../common/Icons';
 
 /**
  * Two-step submission confirmation modal.
@@ -52,7 +53,9 @@ const ConfirmModal = ({ assignment, groups, onClose, onSuccess }) => {
             <h2 className="text-lg font-bold text-gray-800">Confirm Submission</h2>
             <p className="text-sm text-gray-500 mt-0.5">{assignment.title}</p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <XMarkIcon className="w-5 h-5" />
+          </button>
         </div>
 
         {error && (
@@ -97,7 +100,7 @@ const ConfirmModal = ({ assignment, groups, onClose, onSuccess }) => {
               disabled={loading}
               className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-60 transition"
             >
-              {loading ? 'Processing...' : '✅ Yes, I have submitted'}
+              {loading ? 'Processing...' : <span className="flex items-center justify-center gap-2"><CheckCircleIcon className="w-4 h-4" /> Yes, I have submitted</span>}
             </button>
           </>
         )}
@@ -106,7 +109,7 @@ const ConfirmModal = ({ assignment, groups, onClose, onSuccess }) => {
         {step === 2 && (
           <>
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-5">
-              <p className="text-sm text-yellow-800 font-medium">⚠️ {message}</p>
+              <p className="text-sm text-yellow-800 font-medium flex items-center gap-2"><ExclamationIcon className="w-4 h-4 flex-shrink-0" /> {message}</p>
               <p className="text-sm text-yellow-700 mt-1">
                 This action is <strong>irreversible</strong>. Click below to finalise.
               </p>
@@ -118,7 +121,7 @@ const ConfirmModal = ({ assignment, groups, onClose, onSuccess }) => {
                 disabled={loading}
                 className="flex-1 bg-green-600 text-white py-2 rounded-lg font-medium hover:bg-green-700 disabled:opacity-60 transition"
               >
-                {loading ? 'Confirming...' : '✔ Confirm Final Submission'}
+                {loading ? 'Confirming...' : <span className="flex items-center justify-center gap-2"><CheckCircleIcon className="w-4 h-4" /> Confirm Final Submission</span>}
               </button>
               <button
                 onClick={onClose}
