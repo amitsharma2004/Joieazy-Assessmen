@@ -32,12 +32,26 @@ Frontend (React + Tailwind)  →  Backend (Node.js + Express)  →  Database (Su
 - View all assignments with OneDrive submission links
 - Confirm submission via **two-step verification**
 - Track group progress with visual progress bars
+- **Student Dashboard** — welcome banner, progress stats, upcoming deadlines, quick actions
+- **Search & filter** assignments (All / Active / Pending / Submitted / Overdue)
+- **Toast notifications** on all key actions (submit, add/remove member, errors)
 
 ### Admin (Professor) Role
 - Create, edit, delete assignments (title, description, due date, OneDrive link)
 - Assign to **all students** or **specific groups**
 - Track group-wise & student-wise submission confirmations
 - View analytics dashboard with completion charts
+- **Admin Dashboard** — stat cards (assignments, groups, students, avg completion), bar chart, recent assignments
+- **Search & filter** assignments (All / Active / Overdue) with live search input
+- **CSV export** — download full assignment list as a `.csv` file
+- **Toast notifications** on create, update, and error events
+
+### Extra Additions (Beyond Requirements)
+- **Reusable SVG Icon System** — `Icons.jsx` with 24 Heroicons-style SVG components, replacing all emoji icons site-wide
+- **Recharts bar charts** on both Admin Dashboard and Analytics page
+- **Countdown badges** — colour-coded due date labels (overdue / due soon / active)
+- **Role-based dashboards** — dedicated landing pages for admin and student after login
+- **Responsive design** — mobile-friendly layouts using Tailwind CSS grid/flex
 
 ---
 
@@ -45,7 +59,7 @@ Frontend (React + Tailwind)  →  Backend (Node.js + Express)  →  Database (Su
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | React.js, Tailwind CSS, React Router v6, Recharts |
+| Frontend | React.js, Tailwind CSS, React Router v6, Recharts, react-hot-toast |
 | Backend | Node.js, Express.js |
 | Database | PostgreSQL via Supabase |
 | Auth | JWT (jsonwebtoken) + bcryptjs |
@@ -69,12 +83,14 @@ joineazy/
 │   └── package.json
 ├── frontend/
 │   ├── src/
-│   │   ├── components/     # Navbar, ProtectedRoute, Spinner, ConfirmModal
+│   │   ├── components/
+│   │   │   ├── common/     # Navbar, ProtectedRoute, Spinner, Icons.jsx (24 SVG icons)
+│   │   │   └── student/    # ConfirmModal (two-step submission)
 │   │   ├── context/        # AuthContext (JWT + user state)
 │   │   ├── pages/
-│   │   │   ├── admin/      # AssignmentList, AssignmentForm, AssignmentDetail, Analytics, Groups
-│   │   │   └── student/    # AssignmentList, Groups
-│   │   └── utils/          # axios API instance
+│   │   │   ├── admin/      # Dashboard, AssignmentList, AssignmentForm, AssignmentDetail, Analytics, Groups
+│   │   │   └── student/    # Dashboard, AssignmentList, Groups
+│   │   └── utils/          # axios API instance with JWT interceptor
 │   ├── Dockerfile
 │   └── package.json
 ├── database/
@@ -221,6 +237,10 @@ REACT_APP_API_URL=http://localhost:5000/api
 3. **Two-step submission** — prevents accidental confirmations
 4. **Supabase JS SDK over HTTPS** — more portable than direct PostgreSQL TCP connection
 5. **Monolith structure** with separate `frontend/` and `backend/` folders for clarity
+6. **Centralised SVG icon system** (`Icons.jsx`) — single source of truth for all icons, no emoji, fully accessible and styleable with Tailwind classes
+7. **Role-based dashboards** — each role lands on a dedicated dashboard with relevant stats and quick actions after login
+8. **CSV export via Blob API** — no extra library needed; assignment data exported client-side
+9. **react-hot-toast** — consistent, non-blocking feedback replacing all `alert()` calls
 
 ---
 
